@@ -2,7 +2,7 @@ mod network;
 mod rest_api;
 mod sysinfo_extractor;
 
-use std::{error::Error, path::PathBuf};
+use std::{error::Error};
 use futures_util::StreamExt;
 use network::Client;
 use tracing_subscriber::EnvFilter;
@@ -35,6 +35,8 @@ enum CliArgument {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    // Tracing lib
+    // TODO: Learn how to use it 🤓
     let _ = tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env())
         .try_init();

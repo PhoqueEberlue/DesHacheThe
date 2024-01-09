@@ -1,71 +1,34 @@
 use futures::channel::{
-    mpsc::{self, Receiver},
+    mpsc::{self},
     oneshot,
 };
 // use tokio::sync::{mpsc, oneshot}; // Should I use tokio oneshot & mpsc instead??
 //
 use futures_util::{SinkExt, Stream, StreamExt};
 use libp2p::{
-    identity, kad, mdns, noise, request_response,
+    identity, kad, mdns, noise,
     swarm::{NetworkBehaviour, SwarmEvent},
-    tcp, yamux, Multiaddr, PeerId, Swarm,
+    tcp, yamux, Multiaddr, Swarm,
 };
-use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::result::Result;
 use std::time::Duration;
 
-// We create a custom network behaviour that combines Kademlia and mDNS.
+// Custom network behaviour for libp2p using kademlia DHT and mDNS behaviours
 #[derive(NetworkBehaviour)]
 struct Behaviour {
     kademlia: kad::Behaviour<kad::store::MemoryStore>,
     mdns: mdns::async_io::Behaviour,
-    // request_response: request_response::Behaviour<>,
 }
 
-pub(crate) struct Client {
-    sender: mpsc::Sender<Command>,
-}
-
-// Commands used to control the p2p client
-#[derive(Debug)]
-enum Command {
-    StartListening {
-        addr: Multiaddr,
-        sender: oneshot::Sender<Result<(), Box<dyn Error + Send>>>, // Used to get the result
-    },
-    Get {
-        key: Vec<u8>,
-        sender: oneshot::Sender<Result<(), Box<dyn Error + Send>>>,
-    },
-    Put {
-        key: Vec<u8>,
-        value: Vec<u8>,
-        sender: oneshot::Sender<Result<(), Box<dyn Error + Send>>>,
-    },
-}
-
-#[derive(Debug)]
-pub(crate) enum Event {
-    GetResult {
-        key: String,
-        value: String,
-        publisher: Option<String>,
-    },
-    PutResult {
-        result: Result<(), Box<dyn Error + Send>>,
-    },
-}
-
-pub(crate) struct EventLoop {
-    swarm: Swarm<Behaviour>,
-    command_receiver: mpsc::Receiver<Command>,
-    event_sender: mpsc::Sender<Event>,
-    pending_dial: HashMap<PeerId, oneshot::Sender<Result<(), Box<dyn Error + Send>>>>,
-    pending_start_providing: HashMap<kad::QueryId, oneshot::Sender<()>>,
-    pending_get_providers: HashMap<kad::QueryId, oneshot::Sender<HashSet<PeerId>>>,
-}
-
+/// Setup network instance using libp2p
+/// Parameter:
+/// - secret_key_seed: seed for generating the keys of the local node
+///
+/// Returns:
+/// - Client: Struct providing functions to interact with the network
+/// - Event receiver: communicate network events through a mpsc channel
+/// - EventLoop: Struct that contains the run function in order to handle network events
 pub(crate) async fn new(
     secret_key_seed: Option<u8>,
 ) -> Result<(Client, impl Stream<Item = Event>, EventLoop), Box<dyn Error>> {
@@ -97,13 +60,6 @@ pub(crate) async fn new(
                     mdns::Config::default(),
                     key.public().to_peer_id(),
                 )?,
-                // request_response: request_response::cbor::Behaviour::new(
-                //     [(
-                //         StreamProtocol::new("/file-exchange/1"),
-                //         ProtocolSupport::Full,
-                //     )],
-                //     request_response::Config::default(),
-                // ),
             })
         })?
         .with_swarm_config(|c| c.with_idle_connection_timeout(Duration::from_secs(60)))
@@ -126,22 +82,31 @@ pub(crate) async fn new(
     ))
 }
 
+/// Client providing methods to interact with the network
+pub(crate) struct Client {
+    sender: mpsc::Sender<Command>,
+}
+
 impl Client {
-    /// Listen for incoming connections on the given address.
+    /// Send a command to listen for incoming connections on the given address.
     pub(crate) async fn start_listening(
         &mut self,
         addr: Multiaddr,
     ) -> Result<(), Box<dyn Error + Send>> {
         let (sender, receiver) = oneshot::channel();
 
+        // Send command to EventLoop
         self.sender
+            // pass the sender we created as argument in order to receive a result
             .send(Command::StartListening { addr, sender })
             .await
             .expect("Command receiver not to be dropped.");
 
+        // Waiting result from the EventLoop
         receiver.await.expect("Sender not to be dropped.")
     }
 
+    /// Send get command to retrieve a kademlia record
     pub(crate) async fn get(&mut self, key: Vec<u8>) -> Result<(), Box<dyn Error + Send>> {
         let (sender, receiver) = oneshot::channel();
 
@@ -153,6 +118,7 @@ impl Client {
         receiver.await.expect("xd")
     }
 
+    /// Send put command to put a kademlia record
     pub(crate) async fn put(
         &mut self,
         key: Vec<u8>,
@@ -169,6 +135,32 @@ impl Client {
     }
 }
 
+// Commands passed between Client and EventLoop in order to communicate
+#[derive(Debug)]
+enum Command {
+    StartListening {
+        addr: Multiaddr,
+        // Oneshot channel that lets the EventLoop sent a result to the Client
+        sender: oneshot::Sender<Result<(), Box<dyn Error + Send>>>,
+    },
+    Get {
+        key: Vec<u8>,
+        sender: oneshot::Sender<Result<(), Box<dyn Error + Send>>>,
+    },
+    Put {
+        key: Vec<u8>,
+        value: Vec<u8>,
+        sender: oneshot::Sender<Result<(), Box<dyn Error + Send>>>,
+    },
+}
+
+/// EventLoop handles network behaviour events and commands by the Client 
+pub(crate) struct EventLoop {
+    swarm: Swarm<Behaviour>,
+    command_receiver: mpsc::Receiver<Command>,
+    event_sender: mpsc::Sender<Event>,
+}
+
 impl EventLoop {
     fn new(
         swarm: Swarm<Behaviour>,
@@ -179,18 +171,51 @@ impl EventLoop {
             swarm,
             command_receiver,
             event_sender,
-            pending_dial: Default::default(),
-            pending_start_providing: Default::default(),
-            pending_get_providers: Default::default(),
         }
     }
 
+    /// Handles events and commands
     pub(crate) async fn run(mut self) {
         println!("Network event loop running");
         loop {
             tokio::select! {
-                event = self.swarm.select_next_some() => self.handle_event(event).await,
                 command = self.command_receiver.select_next_some() => self.handle_command(command).await,
+                event = self.swarm.select_next_some() => self.handle_event(event).await,
+            }
+        }
+    }
+
+    async fn handle_command(&mut self, command: Command) {
+        match command {
+            Command::StartListening { addr, sender } => {
+                let _ = match self.swarm.listen_on(addr) {
+                    Ok(_) => sender.send(Ok(())),
+                    Err(e) => sender.send(Err(Box::new(e))),
+                };
+            }
+            Command::Get { key, sender } => {
+                let key = kad::RecordKey::new(&key);
+
+                self.swarm.behaviour_mut().kademlia.get_record(key);
+                let _ = sender.send(Ok(()));
+            }
+            Command::Put { key, value, sender } => {
+                let key = kad::RecordKey::new(&key);
+
+                let record = kad::Record {
+                    key,
+                    value,
+                    publisher: None,
+                    expires: None,
+                };
+
+                self.swarm
+                    .behaviour_mut()
+                    .kademlia
+                    .put_record(record, kad::Quorum::One)
+                    .expect("Failed to store record locally.");
+
+                let _ = sender.send(Ok(()));
             }
         }
     }
@@ -257,39 +282,17 @@ impl EventLoop {
             _ => {}
         }
     }
+}
 
-    async fn handle_command(&mut self, command: Command) {
-        match command {
-            Command::StartListening { addr, sender } => {
-                let _ = match self.swarm.listen_on(addr) {
-                    Ok(_) => sender.send(Ok(())),
-                    Err(e) => sender.send(Err(Box::new(e))),
-                };
-            }
-            Command::Get { key, sender } => {
-                let key = kad::RecordKey::new(&key);
-
-                self.swarm.behaviour_mut().kademlia.get_record(key);
-                let _ = sender.send(Ok(()));
-            }
-            Command::Put { key, value, sender } => {
-                let key = kad::RecordKey::new(&key);
-
-                let record = kad::Record {
-                    key,
-                    value,
-                    publisher: None,
-                    expires: None,
-                };
-
-                self.swarm
-                    .behaviour_mut()
-                    .kademlia
-                    .put_record(record, kad::Quorum::One)
-                    .expect("Failed to store record locally.");
-
-                let _ = sender.send(Ok(()));
-            }
-        }
-    }
+/// Events that the EventLoop sends via the event sender 
+#[derive(Debug)]
+pub(crate) enum Event {
+    GetResult {
+        key: String,
+        value: String,
+        publisher: Option<String>,
+    },
+    PutResult {
+        result: Result<(), Box<dyn Error + Send>>,
+    },
 }
