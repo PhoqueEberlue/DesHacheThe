@@ -1,6 +1,6 @@
 # DèsHachesThé
 
-DèsHachesThé  🪓🫖 is a DHT school project among Universitatea de Vest din Timisoara.
+DèsHachesThé  🪓🫖 is a DHT school project among Universitatea de Vest din Timisoara.
 
 Authors:
 
