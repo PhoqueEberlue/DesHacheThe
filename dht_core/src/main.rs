@@ -2,7 +2,7 @@ mod network;
 mod rest_api;
 mod sysinfo_extractor;
 
-use std::{error::Error};
+use std::error::Error;
 use futures_util::StreamExt;
 use network::Client;
 use tracing_subscriber::EnvFilter;
@@ -40,9 +40,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let _ = tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env())
         .try_init();
-
     
-       let opt = Opt::parse();
+    let opt = Opt::parse();
 
     let (mut network_client, mut network_events, network_event_loop) =
         network::new(opt.secret_key_seed).await?;
@@ -62,6 +61,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .await
             .expect("Listening not to fail."),
     };
+
+
+    // Machine info task
+    tokio::task::spawn(async {
+        loop {
+            // Fetching machine informations every 10 seconds
+            std::thread::sleep(std::time::Duration::from_secs(10));
+            sysinfo_extractor::get_all_as_xml();
+        }
+    });
+
+    tokio::task::spawn(rest_api::run());
 
     // Read full lines from stdin
     let mut stdin = io::BufReader::new(io::stdin()).lines();

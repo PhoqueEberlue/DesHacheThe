@@ -1,15 +1,13 @@
 // WARP
 use warp::Filter;
-use tokio::io::{self, AsyncBufReadExt};
 
-pub async fn run_rest_api() {
+pub(crate) async fn run() {
     let routes = warp::path!("hello" / String)
         .map(|name| format!("Hello, {}!", name));
 
     let server = warp::serve(routes);
     
+    println!("Rest API running");
     // Spawn the server into a runtime
-    tokio::task::spawn(server.run(([127, 0, 0, 1], 3030)));
+    let _ = server.run(([127, 0, 0, 1], 3030)).await;
 }
-// REST API
-    

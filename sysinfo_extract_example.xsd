@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- Define complex types for elements -->
+  <xs:complexType name="CpuType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="usage" type="xs:decimal" use="required"/>
+    <xs:attribute name="frequency" type="xs:integer" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="RamType">
+    <xs:attribute name="total" type="xs:integer" use="required"/>
+    <xs:attribute name="used" type="xs:integer" use="required"/>
+    <xs:attribute name="total_swap" type="xs:integer" use="required"/>
+    <xs:attribute name="used_swap" type="xs:integer" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="DiskType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="kind" type="xs:string" use="required"/>
+    <xs:attribute name="file_system" type="xs:string" use="required"/>
+    <xs:attribute name="total_space" type="xs:integer" use="required"/>
+    <xs:attribute name="available_space" type="xs:integer" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="NetworkType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="received" type="xs:integer" use="required"/>
+    <xs:attribute name="total_received" type="xs:integer" use="required"/>
+    <xs:attribute name="transmitted" type="xs:integer" use="required"/>
+    <xs:attribute name="total_transmitted" type="xs:integer" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="CpusType">
+    <xs:sequence>
+      <xs:element name="cpu" type="CpuType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DisksType">
+    <xs:sequence>
+      <xs:element name="disk" type="DiskType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="NetworksType">
+    <xs:sequence>
+      <xs:element name="network" type="NetworkType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SysinfoType">
+    <xs:sequence>
+      <xs:element name="cpus" type="CpusType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="ram" type="RamType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="disks" type="DisksType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="networks" type="NetworksType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Define the root element -->
+  <xs:element name="sysinfo" type="SysinfoType"/>
+
+</xs:schema>
