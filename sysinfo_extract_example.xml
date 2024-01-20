@@ -1,30 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<sysinfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="sysinfo.xsd">
-    <cpus>
-        <cpu name="cpu0" usage="0" frequency="1617"/>
-        <cpu name="cpu1" usage="4.7619047" frequency="1383"/>
-        <cpu name="cpu2" usage="4.7619047" frequency="1057"/>
-        <cpu name="cpu3" usage="10" frequency="1250"/>
-        <cpu name="cpu4" usage="0" frequency="1329"/>
-        <cpu name="cpu5" usage="0" frequency="2473"/>
-        <cpu name="cpu6" usage="0" frequency="1302"/>
-        <cpu name="cpu7" usage="0" frequency="1715"/>
-    </cpus>
-    <ram total="33581301760" used="5909442560" total_swap="9448923136" used_swap="0"/>
-    <disks>
-        <disk name="/dev/sda2" kind="SSD" file_system="ext4" total_space="115811487744" available_space="17630699520"/>
-        <disk name="/dev/sda1" kind="SSD" file_system="vfat" total_space="313929728" available_space="287059968"/>
-        <disk name="/dev/sdb1" kind="HDD" file_system="ext4" total_space="823866425344" available_space="134767181824"/>
-        <disk name="/dev/sdb1" kind="HDD" file_system="ext4" total_space="823866425344" available_space="134767181824"/>
-        <disk name="/dev/sdb1" kind="HDD" file_system="ext4" total_space="823866425344" available_space="134767181824"/>
-    </disks>
-    <networks>
-        <network name="br-32697b38b597" received="0" total_received="0" transmitted="0" total_transmitted="0"/>
-        <network name="docker0" received="0" total_received="0" transmitted="0" total_transmitted="0"/>
-        <network name="lo" received="0" total_received="103138" transmitted="0" total_transmitted="103138"/>
-        <network name="enp3s0" received="444" total_received="287828521" transmitted="5093" total_transmitted="7213376"/>
-        <network name="wlan0" received="0" total_received="135208" transmitted="5280" total_transmitted="115437"/>
-        <network name="virbr0" received="0" total_received="0" transmitted="0" total_transmitted="0"/>
-    </networks>
+<sysinfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="sysinfo_extract_example.xsd">
+    <record>
+        <cpus>
+            <cpu name="cpu0" usage="0" frequency="1617"/>
+            <cpu name="cpu1" usage="4.7619047" frequency="1383"/>
+            <cpu name="cpu2" usage="4.7619047" frequency="1057"/>
+            <cpu name="cpu3" usage="10" frequency="1250"/>
+            <cpu name="cpu4" usage="0" frequency="1329"/>
+            <cpu name="cpu5" usage="0" frequency="2473"/>
+            <cpu name="cpu6" usage="0" frequency="1302"/>
+            <cpu name="cpu7" usage="0" frequency="1715"/>
+        </cpus>
+        <ram total="33581301760" used="5909442560" total_swap="9448923136" used_swap="0"/>
+        <disks>
+            <disk name="/dev/sda2" kind="SSD" file_system="ext4" total_space="115811487744" available_space="17630699520"/>
+            <disk name="/dev/sda1" kind="SSD" file_system="vfat" total_space="313929728" available_space="287059968"/>
+            <disk name="/dev/sdb1" kind="HDD" file_system="ext4" total_space="823866425344" available_space="134767181824"/>
+            <disk name="/dev/sdb1" kind="HDD" file_system="ext4" total_space="823866425344" available_space="134767181824"/>
+            <disk name="/dev/sdb1" kind="HDD" file_system="ext4" total_space="823866425344" available_space="134767181824"/>
+        </disks>
+        <networks>
+            <network name="br-32697b38b597" received="0" total_received="0" transmitted="0" total_transmitted="0"/>
+            <network name="docker0" received="0" total_received="0" transmitted="0" total_transmitted="0"/>
+            <network name="lo" received="0" total_received="103138" transmitted="0" total_transmitted="103138"/>
+            <network name="enp3s0" received="444" total_received="287828521" transmitted="5093" total_transmitted="7213376"/>
+            <network name="wlan0" received="0" total_received="135208" transmitted="5280" total_transmitted="115437"/>
+            <network name="virbr0" received="0" total_received="0" transmitted="0" total_transmitted="0"/>
+        </networks>
+    </record>
 </sysinfo>

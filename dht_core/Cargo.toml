@@ -11,6 +11,7 @@ futures = "0.3.30"
 futures-util = "0.3.30"
 libp2p = {version = "0.53.2", features = ["mdns", "async-std", "dns", "kad", "noise", "macros", "tcp", "yamux", "request-response"]}
 quick-xml = "0.31.0"
+reqwest = "0.11.23"
 serde = {version="1.0.194", features = ["derive"]}
 sysinfo = "0.30.5"
 tokio = {version = "1.35.1", features = ["full"]}

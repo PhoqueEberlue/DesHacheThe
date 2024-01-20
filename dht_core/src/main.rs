@@ -1,37 +1,15 @@
 mod network;
 mod rest_api;
 mod sysinfo_extractor;
+mod cli;
+mod database;
 
+use clap::Parser;
 use std::error::Error;
 use futures_util::StreamExt;
-use network::Client;
 use tracing_subscriber::EnvFilter;
-use clap::Parser;
-use libp2p::Multiaddr;
 use tokio;
 use tokio::io::{self, AsyncBufReadExt};
-
-
-#[derive(Parser, Debug)]
-#[clap(name = "libp2p file sharing example")]
-struct Opt {
-    /// Fixed value to generate deterministic peer ID.
-    #[clap(long)]
-    secret_key_seed: Option<u8>,
-
-    #[clap(long)]
-    peer: Option<Multiaddr>,
-
-    #[clap(long)]
-    listen_address: Option<Multiaddr>,
-
-    // #[clap(subcommand)]
-    // argument: CliArgument,
-}
-
-#[derive(Debug, Parser)]
-enum CliArgument {
-}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -41,13 +19,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .with_env_filter(EnvFilter::from_default_env())
         .try_init();
     
-    let opt = Opt::parse();
+    let opt = cli::Opt::parse();
 
-    let (mut network_client, mut network_events, network_event_loop) =
+    let (mut network_client, mut network_events, network_event_loop, peer_id) =
         network::new(opt.secret_key_seed).await?;
 
     // Spawn the network task for it to run in the background.
-    tokio::task::spawn(network_event_loop.run());
+    let task_network_event_loop = tokio::task::spawn(network_event_loop.run());
 
     // In case a listen address was provided use it, otherwise listen on any
     // address.
@@ -62,28 +40,41 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .expect("Listening not to fail."),
     };
 
+    let database_connection = database::DatabaseConnection::new(peer_id).await.unwrap();
 
     // Machine info task
-    tokio::task::spawn(async {
+    let task_sysinfo = tokio::task::spawn(async move {
         loop {
             // Fetching machine informations every 10 seconds
+            let _ = database_connection.add_sysinfo_record(String::from_utf8(sysinfo_extractor::get_record()).unwrap()).await;
             std::thread::sleep(std::time::Duration::from_secs(10));
-            sysinfo_extractor::get_all_as_xml();
         }
     });
 
-    tokio::task::spawn(rest_api::run());
+    // tokio::task::spawn(rest_api::run());
 
-    // Read full lines from stdin
-    let mut stdin = io::BufReader::new(io::stdin()).lines();
+    if opt.cli_mode {
+        tokio::task::spawn(async move {
+            // Read full lines from stdin
+            let mut stdin = io::BufReader::new(io::stdin()).lines();
 
-    // Kick it off.
-    loop {
-        tokio::select! {
-            line = stdin.next_line() => handle_input_line(line.unwrap().expect("Stdin not to close"), &mut network_client).await,
-            event = network_events.next() => handle_network_event(event.expect("event")).await,
-        }
+            loop {
+                let line = stdin.next_line().await;
+                cli::handle_input_line(line.unwrap().expect("Stdin not to close"), &mut network_client).await;
+            }
+        });
     }
+
+    let task_network_event = tokio::task::spawn(async move {
+        loop {
+            let event = network_events.next().await;
+            handle_network_event(event.expect("event")).await;
+        }
+    });
+
+    let _ = tokio::join!(task_network_event, task_sysinfo, task_network_event_loop);
+
+    Ok(())
 }
 
 async fn handle_network_event(event: network::Event) {
@@ -94,49 +85,5 @@ async fn handle_network_event(event: network::Event) {
         network::Event::PutResult { result } => {
             println!("PutResult: {:?}", result); 
         }
-    }
-}
-
-
-async fn handle_input_line(line: String, network_client: &mut Client) {
-    let mut args = line.split(' ');
-    match args.next() {
-        Some("GET") => {
-            let key = {
-                match args.next() {
-                    Some(key) => key,
-                    None => {
-                        eprintln!("Expected key");
-                        return;
-                    }
-                }
-            };
-
-            let _ = network_client.get(key.as_bytes().to_owned()).await;
-        },
-        Some("PUT") => {
-            let key = {
-                match args.next() {
-                    Some(k) => k,
-                    None => {
-                        eprintln!("Expected key");
-                        return;
-                    }
-                }
-            }; 
-
-            let value = {
-                match args.next() {
-                    Some(v) => v,
-                    None => {
-                        eprintln!("Expected key");
-                        return;
-                    }
-                }
-            }; 
-
-            let _ = network_client.put(key.as_bytes().to_owned(), value.as_bytes().to_owned()).await;
-        }
-        _ => {}
     }
 }

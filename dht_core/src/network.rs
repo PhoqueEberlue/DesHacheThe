@@ -8,7 +8,7 @@ use futures_util::{SinkExt, Stream, StreamExt};
 use libp2p::{
     identity, kad, mdns, noise,
     swarm::{NetworkBehaviour, SwarmEvent},
-    tcp, yamux, Multiaddr, Swarm,
+    tcp, yamux, Multiaddr, Swarm, PeerId,
 };
 use std::error::Error;
 use std::result::Result;
@@ -31,7 +31,7 @@ struct Behaviour {
 /// - EventLoop: Struct that contains the run function in order to handle network events
 pub(crate) async fn new(
     secret_key_seed: Option<u8>,
-) -> Result<(Client, impl Stream<Item = Event>, EventLoop), Box<dyn Error>> {
+) -> Result<(Client, impl Stream<Item = Event>, EventLoop, String), Box<dyn Error>> {
     let id_keys = match secret_key_seed {
         Some(seed) => {
             let mut bytes = [0u8; 32];
@@ -41,6 +41,7 @@ pub(crate) async fn new(
         None => identity::Keypair::generate_ed25519(),
     };
     let peer_id = id_keys.public().to_peer_id();
+    println!("{}", peer_id);
 
     let mut swarm = libp2p::SwarmBuilder::with_existing_identity(id_keys)
         .with_async_std()
@@ -79,6 +80,7 @@ pub(crate) async fn new(
         },
         event_receiver,
         EventLoop::new(swarm, command_receiver, event_sender),
+        peer_id.to_string()
     ))
 }
 
@@ -113,7 +115,7 @@ impl Client {
         self.sender
             .send(Command::Get { key, sender })
             .await
-            .expect("Wallahi");
+            .expect("Sender not to be dropped");
 
         receiver.await.expect("xd")
     }
@@ -252,10 +254,7 @@ impl EventLoop {
                         .send(Event::GetResult {
                             key: String::from_utf8(key.as_ref().to_vec()).unwrap(),
                             value: String::from_utf8(value).unwrap(),
-                            publisher: match publisher {
-                                Some(p) => Some(String::from_utf8_lossy(&p.to_bytes()).to_string()),
-                                None => None,
-                            },
+                            publisher,
                         })
                         .await
                         .expect("Yep");
@@ -290,7 +289,7 @@ pub(crate) enum Event {
     GetResult {
         key: String,
         value: String,
-        publisher: Option<String>,
+        publisher: Option<PeerId>,
     },
     PutResult {
         result: Result<(), Box<dyn Error + Send>>,

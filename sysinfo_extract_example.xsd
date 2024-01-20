@@ -49,16 +49,21 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="SysinfoType">
+  <xs:complexType name="RecordType">
     <xs:sequence>
       <xs:element name="cpus" type="CpusType" minOccurs="1" maxOccurs="1"/>
       <xs:element name="ram" type="RamType" minOccurs="1" maxOccurs="1"/>
-      <xs:element name="disks" type="DisksType" minOccurs="1" maxOccurs="unbounded"/>
-      <xs:element name="networks" type="NetworksType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="disks" type="DisksType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="networks" type="NetworksType" minOccurs="1" maxOccurs="1"/>
     </xs:sequence>
   </xs:complexType>
 
   <!-- Define the root element -->
-  <xs:element name="sysinfo" type="SysinfoType"/>
-
+  <xs:element name="sysinfo">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="record" type="RecordType" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>

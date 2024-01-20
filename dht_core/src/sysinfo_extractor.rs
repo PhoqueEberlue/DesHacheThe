@@ -2,9 +2,9 @@ use quick_xml::writer::Writer;
 use std::io::Cursor;
 use sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, Networks, RefreshKind, System};
 
-pub(crate) fn get_all_as_xml() {
+pub(crate) fn get_record() -> Vec<u8> {
     match serialize_xml() {
-        Ok(_) => {}
+        Ok(res) => res, 
         Err(e) => panic!("Error while writing sysinfo in XML {e}"),
     }
 }
@@ -132,12 +132,12 @@ fn write_networks_info(writer: &mut Writer<Cursor<Vec<u8>>>) -> Result<(), quick
     Ok(())
 }
 
-fn serialize_xml() -> Result<(), quick_xml::Error> {
+fn serialize_xml() -> Result<Vec<u8>, quick_xml::Error> {
     let mut writer = Writer::new(Cursor::new(Vec::new()));
 
     // Root node
     writer
-        .create_element("sysinfo")
+        .create_element("record")
         .write_inner_content::<_, quick_xml::Error>(|writer| {
             write_cpus_info(writer)?;
             write_ram_info(writer)?;
@@ -148,7 +148,5 @@ fn serialize_xml() -> Result<(), quick_xml::Error> {
 
     let result = writer.into_inner().into_inner();
 
-    println!("{}", String::from_utf8(result).unwrap());
-
-    Ok(())
+    Ok(result)
 }
