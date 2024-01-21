@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fleet>
+    <machine seed="42">
+        <data key="matrix1">
+            <![CDATA[ [[1,2,3], [3,2,1], [0,2,4]] ]]>
+        </data>
+        <data key="matrix1">
+            <![CDATA[ [[3,4,0], [6,1,1], [1,3,5]] ]]>
+        </data>
+    </machine>
+
+    <machine seed="22">
+        <data key="matrix3">
+            <![CDATA[ [[0,3,8], [1,2,4], [6,0,2]] ]]>
+        </data>
+        <data key="matrix4">
+            <![CDATA[ [[6,2,1], [2,3,4], [2,0,0]] ]]>
+        </data>
+    </machine>
+</fleet>
