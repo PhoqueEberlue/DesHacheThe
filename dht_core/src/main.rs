@@ -40,6 +40,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .expect("Listening not to fail."),
     };
 
+    if let Some(data) = opt.data {
+        let parsed_data = cli::parse_input_data(data);
+
+        for (key, value) in parsed_data {
+            let _ = network_client.put(key.as_bytes().to_vec(), value.as_bytes().to_vec());
+            println!("Added {key}={value}")
+        }
+    }
+
     let database_connection = database::DatabaseConnection::new(peer_id).await.unwrap();
 
     // Machine info task

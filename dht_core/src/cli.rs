@@ -72,5 +72,19 @@ pub(crate) async fn handle_input_line(line: String, network_client: &mut Client)
     }
 }
 
-pub(crate) fn parse_input_data() {
+/// Return several matrices
+pub(crate) fn parse_input_data(data: String) -> Vec<(String, String)> {
+    let mut res = vec![];
+
+    let tmp: Vec<&str> = data.split(";").collect();
+
+    for d in tmp {
+        let key_val: Vec<&str> = d.split("=").collect();
+
+        if key_val.len() < 2 { break; }
+
+        res.push((key_val[0].to_owned(), key_val[1].to_owned()))
+    }
+
+    res
 }
