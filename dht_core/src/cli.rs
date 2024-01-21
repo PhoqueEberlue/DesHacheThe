@@ -10,6 +10,9 @@ pub(crate) struct Opt {
     pub secret_key_seed: Option<u8>,
 
     #[arg(long)]
+    pub data: Option<String>,
+
+    #[arg(long)]
     pub peer: Option<Multiaddr>,
 
     #[arg(long)]
@@ -67,4 +70,7 @@ pub(crate) async fn handle_input_line(line: String, network_client: &mut Client)
         }
         _ => {}
     }
+}
+
+pub(crate) fn parse_input_data() {
 }
