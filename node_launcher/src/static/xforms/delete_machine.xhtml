@@ -1,0 +1,21 @@
+<xf:html xmlns:xf="http://www.w3.org/2002/xforms">
+    <xf:head>
+        <xf:title>Delete Machine</xf:title>
+    </xf:head>
+    <xf:body>
+        <xf:model>
+            <xf:instance>
+                <!-- Instance data for Delete -->
+            </xf:instance>
+        </xf:model>
+        <xf:group>
+            <xf:label>Select Machine:</xf:label>
+            <xf:select1 ref="/selectedSeed">
+                <!-- Populate with available seeds -->
+            </xf:select1>
+            <xf:submit submission="delete" validate="false" id="submitBtn">Delete</xf:submit>
+        </xf:group>
+        <xf:submission id="delete" action="javascript:sendData()" method="post" replace="instance"
+            on-done="showFeedback('Machine deleted successfully.')" />
+    </xf:body>
+</xf:html>

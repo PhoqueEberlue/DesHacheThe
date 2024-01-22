@@ -10,20 +10,18 @@
     <main>
         <xf:group>
             <xf:output ref="/message" />
+            <xf:submit submission="back" validate="false" id="backBtn">Back to Home</xf:submit>
             <!-- XForm content will be replaced here -->
         </xf:group>
     </main>
 
     <script>
-        // JavaScript functions for redirection and feedback
-        function redirectToIndex() {
-            window.location.href = "/index";
-        }
-
-        function showFeedback(message) {
-            document.getElementById("message").textContent = message;
+        // JavaScript function for redirection
+        function redirectToHome() {
+            window.location.href = "/home";
         }
     </script>
+    <script src="../static/scripts/script.js"></script>
 </body>
 
 </html>

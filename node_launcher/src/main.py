@@ -8,10 +8,10 @@ from BaseXClient import BaseXClient
 
 DOCKER_PREFIX = "dht"
 
-DATABASE_NAME = "dht-db"
+DATABASE_NAME = "dht_db"
 DATABASE_PORT = 1984
 DATABASE_USERNAME = "admin"
-DATABASE_PASSWORD = "test"
+DATABASE_PASSWORD = "admin"
 
 DOCKER_CLIENT = docker.from_env()
 
@@ -40,32 +40,114 @@ def kill_all_containers():
     return "ok"
 
 
-@app.route("/rest/create_machine")
+@app.route("/rest/create_machine", methods=["POST"])
 def create_machine():
-    # TODO
-    return
+    try:
+        session = BaseXClient.Session(
+            'localhost', DATABASE_PORT, DATABASE_USERNAME, DATABASE_PASSWORD)
+
+        session.execute(f"OPEN {DATABASE_NAME}")
+
+        data = request.get_json()
+
+        seed = data.get("seed")
+        matrix1_key = data.get("matrix1_key")
+        matrix1 = data.get("matrix1")
+        matrix2_key = data.get("matrix2_key")
+        matrix2 = data.get("matrix2")
+
+        # Check if seed already exists
+        seed_exists_query = f"exists(//machine[@seed='{seed}'])"
+        if session.query(seed_exists_query).execute().next():
+            return jsonify({"error": f"Machine with seed {seed} already exists."})
+
+        # Insert new machine
+        insert_query = (
+            f"xquery insert node "
+            f"<machine seed='{seed}'>"
+            f"   <data key='{matrix1_key}'>{matrix1}</data>"
+            f"   <data key='{matrix2_key}'>{matrix2}</data>"
+            f"</machine>"
+            f" into /fleet"
+        )
+
+        session.execute(insert_query)
+
+        session.close()
+
+        return jsonify({"message": f"Machine with seed {seed} created successfully."})
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 
-@app.route("/rest/update_machine")
+@app.route("/rest/update_machine", methods=["POST"])
 def update_machine():
-    # TODO
-    return
+    try:
+        session = BaseXClient.Session(
+            'localhost', DATABASE_PORT, DATABASE_USERNAME, DATABASE_PASSWORD)
+
+        session.execute(f"OPEN {DATABASE_NAME}")
+
+        data = request.get_json()
+
+        selected_seed = data.get("selectedSeed")
+        matrix1_key = data.get("matrix1_key")
+        matrix1 = data.get("matrix1")
+        matrix2_key = data.get("matrix2_key")
+        matrix2 = data.get("matrix2")
+
+        # Check if selected seed exists
+        seed_exists_query = f"exists(//machine[@seed='{selected_seed}'])"
+        if not session.query(seed_exists_query).execute().next():
+            return jsonify({"error": f"Machine with seed {selected_seed} does not exist."})
+
+        # Update machine
+        update_query = (
+            f"replace value of node "
+            f"//machine[@seed='{selected_seed}']/data[@key='{matrix1_key}'] "
+            f"with '{matrix1}', "
+            f"//machine[@seed='{selected_seed}']/data[@key='{matrix2_key}'] "
+            f"with '{matrix2}'"
+        )
+
+        session.query(update_query).execute()
+
+        session.close()
+
+        return jsonify({"message": f"Machine with seed {selected_seed} updated successfully."})
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 
-@app.route("/rest/delete_machine/<int:seed>")
+@app.route("/rest/delete_machine/<int:seed>", methods=["DELETE"])
 def delete_machine(seed):
-    session = BaseXClient.Session(
-        'localhost', DATABASE_PORT, DATABASE_USERNAME, DATABASE_PASSWORD)
+    try:
+        session = BaseXClient.Session(
+            'localhost', DATABASE_PORT, DATABASE_USERNAME, DATABASE_PASSWORD)
 
-    session.execute(f"OPEN {DATABASE_NAME}")
+        session.execute(f"OPEN {DATABASE_NAME}")
 
-    input = f"delete //machine[@seed eq {seed}]"
+        # Check if seed exists
+        seed_exists_query = f"exists(//machine[@seed='{seed}'])"
+        if not session.query(seed_exists_query).execute().next():
+            return jsonify({"error": f"Machine with seed {seed} does not exist."})
 
-    query = session.query(input)
-    query.execute()
+        # Delete machine
+        delete_query = f"delete node //machine[@seed='{seed}']"
+        session.query(delete_query).execute()
 
-    session.close()
+        session.close()
 
+        return jsonify({"message": f"Machine with seed {seed} deleted successfully."})
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+
+@app.route("/rest/back", methods=["POST"])
+def back():
     return redirect(url_for('home'))
 
 

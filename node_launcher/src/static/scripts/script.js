@@ -45,14 +45,15 @@ function sendData() {
     var menu2Value = document.getElementById("menu2").value;
     var menu3Value = document.getElementById("menu3").value;
 
-    // Créer un objet avec les valeurs à envoyer
+    // Create an object with the values to send
     var data = {
         menu1: menu1Value,
         menu2: menu2Value,
         menu3: menu3Value
     };
 
-    // Convertir l'objet en chaîne JSON
+
+    // Convert the object to a JSON string
     var jsonData = JSON.stringify(data);
 
     // Envoyer la requête POST à la nouvelle route Flask
