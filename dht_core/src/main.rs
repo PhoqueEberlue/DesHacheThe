@@ -4,6 +4,7 @@ mod sysinfo_extractor;
 mod cli;
 mod database;
 
+use std::env;
 use clap::Parser;
 use std::error::Error;
 use futures_util::StreamExt;
@@ -20,9 +21,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .try_init();
     
     let opt = cli::Opt::parse();
+    let secret_key_seed = Some(env::var("secret_key_seed").unwrap().parse::<u8>().unwrap());
 
     let (mut network_client, mut network_events, network_event_loop, peer_id) =
-        network::new(opt.secret_key_seed).await?;
+        network::new(secret_key_seed).await?;
 
     // Spawn the network task for it to run in the background.
     let task_network_event_loop = tokio::task::spawn(network_event_loop.run());
@@ -49,7 +51,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let database_connection = database::DatabaseConnection::new(opt.secret_key_seed.unwrap()).await.unwrap();
+    let database_connection = database::DatabaseConnection::new(secret_key_seed.unwrap()).await.unwrap();
 
     // Machine info task
     let task_sysinfo = tokio::task::spawn(async move {
