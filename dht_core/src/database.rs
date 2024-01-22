@@ -6,11 +6,11 @@ static DB_NAME: &'static str = "dht-db";
 
 pub(crate) struct DatabaseConnection {
     client: reqwest::Client,
-    peer_id: String
+    seed: u8 
 }
 
 impl DatabaseConnection {
-    pub async fn new(peer_id: String) -> Result<DatabaseConnection, Box<dyn Error>> {
+    pub async fn new(seed: u8) -> Result<DatabaseConnection, Box<dyn Error>> {
         let client = reqwest::Client::new();
 
         let body = format!("
@@ -27,9 +27,9 @@ impl DatabaseConnection {
             .text()
             .await?;
 
-        if !body.contains(&peer_id) {
+        if !body.contains(&format!("{}.xml", seed)) {
             let _ = client
-                .get(format!("http://127.0.0.1:8080/rest/{}?command=ADD+TO+{}.xml+<sysinfo></sysinfo>", DB_NAME, peer_id))
+                .get(format!("http://127.0.0.1:8080/rest/{}?command=ADD+TO+{}.xml+<sysinfo></sysinfo>", DB_NAME, seed))
                 .basic_auth("admin", Some("test"))
                 .send()
                 .await?
@@ -37,7 +37,7 @@ impl DatabaseConnection {
                 .await?;
         } 
 
-        Ok(DatabaseConnection { client, peer_id })
+        Ok(DatabaseConnection { client, seed })
     }
 
     pub async fn add_sysinfo_record(&self, record: String) -> Result<(), Box<dyn Error>> {
@@ -47,7 +47,7 @@ impl DatabaseConnection {
                         insert node .//record as last into doc('{}/{}.xml')/sysinfo
                     </text>
                     <context>{}</context>
-                 </query>", DB_NAME, self.peer_id, record);
+                 </query>", DB_NAME, self.seed, record);
 
         let _ = self.client.post("http://127.0.0.1:8080/rest/")
             .basic_auth("admin", Some("test"))

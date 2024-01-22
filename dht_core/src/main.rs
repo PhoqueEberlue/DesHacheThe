@@ -49,7 +49,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let database_connection = database::DatabaseConnection::new(peer_id).await.unwrap();
+    let database_connection = database::DatabaseConnection::new(opt.secret_key_seed.unwrap()).await.unwrap();
 
     // Machine info task
     let task_sysinfo = tokio::task::spawn(async move {
