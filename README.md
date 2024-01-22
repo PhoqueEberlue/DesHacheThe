@@ -10,7 +10,7 @@ Antoine David
 
 ## Architecture
 
-![example-wasm](https://github.com/PhoqueEberlue/DesHachesThe/blob/main/project_architecture.svg)
+![example-wasm](https://github.com/PhoqueEberlue/DesHacheThe/blob/main/project_architecture.svg)
 
 We can identify 4 groups of entities: 
 - Client using web browser
