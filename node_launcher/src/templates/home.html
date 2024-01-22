@@ -18,17 +18,17 @@
     <nav>
         <ul class="dropdown-menu">
             <li>
-                <label for="menu1">Machine Choice :</label>
+                <label for="menu1">Machine Choice:</label>
                 <select id="menu1">
                     <!-- First selection-->
                     <option value="0">Add a Machine</option>
-                    <option value="1">Machine 1</option>
-                    <option value="2">Machine 2</option>
-                    <option value="3">Machine 3</option>
+                    {% for key in xml_documents %}
+                        <option value="{{ xml_documents[key] }}">Machine {{ key }}</td>
+                    {% endfor %}
                 </select>
             </li>
             <li>
-                <label for="menu2">View Selection :</label>
+                <label for="menu2">Action:</label>
                 <select id="menu2">
                     <!-- Second selection -->
                     <option value="1">General view</option>
@@ -37,7 +37,7 @@
                 </select>
             </li>
             <li>
-                <label for="menu3">Record Max :</label>
+                <label for="menu3">Record Max:</label>
                 <select id="menu3">
                     <!-- Third selection -->
                     <option value="1">1 Record</option>

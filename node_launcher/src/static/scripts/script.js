@@ -1,19 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-
-    // Ajax call to get nbr of XML files inside the Database
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/get_xml_count', true);
-
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            var xmlCount = JSON.parse(xhr.responseText);
-            console.log("NBR RECUPERED = " + xmlCount)
-            menu1Creation(xmlCount);
-        }
-    };
-
-    xhr.send();
-
     var menu1 = document.getElementById('menu1');
     var menu2 = document.getElementById('menu2');
     var menu3 = document.getElementById('menu3');
@@ -88,23 +73,23 @@ function sendData() {
         });
 }
 
-function menu1Creation(xmlCount) {
-    // Delete existing option inside menu 1
-    var menu1 = document.getElementById('menu1');
-    menu1.innerHTML = '';
-
-    // Add option 0
-    var option0 = document.createElement('option');
-    option0.value = '0';
-    option0.text = 'Add a Machine';
-    menu1.appendChild(option0);
-
-    // Add other options
-    for (var i = 1; i <= xmlCount; i++) {
-        var option = document.createElement('option');
-        option.value = i.toString();
-        option.text = 'Machine ' + i;
-        menu1.appendChild(option);
-    }
-    initMenus(null)
-}
+// function menu1Creation(xmlCount) {
+//     // Delete existing option inside menu 1
+//     var menu1 = document.getElementById('menu1');
+//     menu1.innerHTML = '';
+// 
+//     // Add option 0
+//     var option0 = document.createElement('option');
+//     option0.value = '0';
+//     option0.text = 'Add a Machine';
+//     menu1.appendChild(option0);
+// 
+//     // Add other options
+//     for (var i = 1; i <= xmlCount; i++) {
+//         var option = document.createElement('option');
+//         option.value = i.toString();
+//         option.text = 'Machine ' + i;
+//         menu1.appendChild(option);
+//     }
+//     initMenus(null)
+// }
