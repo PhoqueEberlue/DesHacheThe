@@ -1,0 +1,6 @@
+BaseXClient==8.4.4
+BaseXClient==8.4.4
+docker_py==1.10.6
+Flask==3.0.1
+lxml==4.9.2
+lxml==5.1.0

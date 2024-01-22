@@ -13,7 +13,7 @@ DATABASE_PORT = 1984
 DATABASE_USERNAME = "admin"
 DATABASE_PASSWORD = "test"
 
-# DOCKER_CLIENT = docker.from_env()
+DOCKER_CLIENT = docker.from_env()
 
 app = Flask(__name__)
 
@@ -34,10 +34,11 @@ def run_all_containers():
     return "ok"
 
 
-@app.route("/rest/delete_all")
+@app.route("/rest/kill_all")
 def kill_all_containers():
     delete_all_containers()
     return "ok"
+
 
 @app.route("/rest/create_machine")
 def create_machine():
@@ -66,6 +67,7 @@ def delete_machine(seed):
     session.close()
 
     return redirect(url_for('home'))
+
 
 # -------------------- VIEW ROUTES --------------------
 # XForms and XSLT Part :

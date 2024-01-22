@@ -73,23 +73,24 @@ function sendData() {
         });
 }
 
-// function menu1Creation(xmlCount) {
-//     // Delete existing option inside menu 1
-//     var menu1 = document.getElementById('menu1');
-//     menu1.innerHTML = '';
-// 
-//     // Add option 0
-//     var option0 = document.createElement('option');
-//     option0.value = '0';
-//     option0.text = 'Add a Machine';
-//     menu1.appendChild(option0);
-// 
-//     // Add other options
-//     for (var i = 1; i <= xmlCount; i++) {
-//         var option = document.createElement('option');
-//         option.value = i.toString();
-//         option.text = 'Machine ' + i;
-//         menu1.appendChild(option);
-//     }
-//     initMenus(null)
-// }
+function launchMachines() {
+    document.getElementById("launch-button").disabled = "true";
+    document.getElementById("kill-button").disabled = "";
+    fetch('/rest/run_all', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+}
+
+function killMachines() {
+    document.getElementById("kill-button").disabled = "true";
+    document.getElementById("launch-button").disabled = "";
+    fetch('/rest/kill_all', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+}
