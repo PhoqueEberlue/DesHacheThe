@@ -1,0 +1,27 @@
+<xf:html xmlns:xf="http://www.w3.org/2002/xforms">
+    <xf:head>
+        <xf:title>Create Machine</xf:title>
+    </xf:head>
+    <xf:body>
+        <xf:model>
+            <xf:instance>
+                <!-- Instance data for Create -->
+            </xf:instance>
+        </xf:model>
+        <xf:group>
+            <xf:label>Seed:</xf:label>
+            <xf:input ref="/seed" />
+            <xf:label>Matrix 1 Key:</xf:label>
+            <xf:input ref="/matrix1_key" />
+            <xf:label>Matrix 1:</xf:label>
+            <xf:input ref="/matrix1" />
+            <xf:label>Matrix 2 Key:</xf:label>
+            <xf:input ref="/matrix2_key" />
+            <xf:label>Matrix 2:</xf:label>
+            <xf:input ref="/matrix2" />
+            <xf:submit submission="create" validate="true">Create</xf:submit>
+        </xf:group>
+        <xf:submission id="create" action="javascript:createMachine()" method="post" replace="instance"
+            on-done="redirectToIndex()" />
+    </xf:body>
+</xf:html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms">
+
+<head>
+    <title>Modify the Fleet of machines</title>
+    <script src="path/to/saxon-xforms.js"></script>
+</head>
+
+<body>
+    <main>
+        <xf:group>
+            <xf:output ref="/message" />
+            <!-- XForm content will be replaced here -->
+        </xf:group>
+    </main>
+
+    <script>
+        // JavaScript functions for redirection and feedback
+        function redirectToIndex() {
+            window.location.href = "/index";
+        }
+
+        function showFeedback(message) {
+            document.getElementById("message").textContent = message;
+        }
+    </script>
+</body>
+
+</html>

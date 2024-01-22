@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/home.css">
+    <script src="../static/scripts/script.js" defer></script>
+    <script src="../static/SaxonJS/SaxonJS2.js"></script>
+    <title>XML Project</title>
+</head>
+
+<body>
+    <header>
+        <h1>Machines Fleet View</h1>
+    </header>
+
+    <nav>
+        <ul class="dropdown-menu">
+            <li>
+                <label for="menu1">Machine Choice :</label>
+                <select id="menu1">
+                    <!-- First selection-->
+                    <option value="0">Add a Machine</option>
+                    <option value="1">Machine 1</option>
+                    <option value="2">Machine 2</option>
+                    <option value="3">Machine 3</option>
+                </select>
+            </li>
+            <li>
+                <label for="menu2">View Selection :</label>
+                <select id="menu2">
+                    <!-- Second selection -->
+                    <option value="1">General view</option>
+                    <option value="2">Modify</option>
+                    <option value="3">Delete</option>
+                </select>
+            </li>
+            <li>
+                <label for="menu3">Record Max :</label>
+                <select id="menu3">
+                    <!-- Third selection -->
+                    <option value="1">1 Record</option>
+                    <option value="2">5 Record</option>
+                    <option value="3">10 Record</option>
+                </select>
+            </li>
+            <li>
+                <button onclick="sendData()">Validate</button>
+            </li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Main content for the page -->
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Project XML</p>
+    </footer>
+</body>
+
+</html>
